@@ -12,6 +12,14 @@ interface PlaylistsApiResponse {
   next: string | null
 }
 
+export interface SpotifyCurrentlyPlaying {
+  is_playing: boolean;
+  item: {
+    name: string;
+    artists: { name: string }[];
+  } | null;
+}
+
 export async function getAllUserPlaylists(token: string): Promise<SpotifyPlaylist[]> {
   let playlists: SpotifyPlaylist[] = []
   let url: string | null = "https://api.spotify.com/v1/me/playlists?limit=50"
@@ -33,4 +41,68 @@ export async function getAllUserPlaylists(token: string): Promise<SpotifyPlaylis
   }
 
   return playlists
+}
+
+export async function getCurrentlyPlaying(token:string): Promise<SpotifyCurrentlyPlaying | null> {
+    const response = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    if (response.status === 204) { // No content
+        return null;
+    }
+    if (!response.ok) {
+        throw new Error("Failed to fetch currently playing track from Spotify");
+    }
+    return response.json();
+}
+
+export async function playerNext(token: string): Promise<void> {
+    const response = await fetch("https://api.spotify.com/v1/me/player/next", {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to skip to next track");
+    }
+}
+
+export async function playerPrevious(token: string): Promise<void> {
+    const response = await fetch("https://api.spotify.com/v1/me/player/previous", {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to skip to previous track");
+    }
+}
+
+export async function playerPlay(token: string): Promise<void> {
+    const response = await fetch("https://api.spotify.com/v1/me/player/play", {
+        method: 'PUT',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to play track");
+    }
+}
+
+export async function playerPause(token: string): Promise<void> {
+    const response = await fetch("https://api.spotify.com/v1/me/player/pause", {
+        method: 'PUT',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to pause track");
+    }
 } 

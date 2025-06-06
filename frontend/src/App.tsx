@@ -1,75 +1,43 @@
 import { Button } from "@/components/ui/button"
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom"
-import { useEffect, useState } from "react"
-import { PlaylistsTable } from "@/components/PlaylistsTable"
-import { getAllUserPlaylists } from "@/lib/spotify"
-import type { SpotifyPlaylist } from "@/lib/spotify"
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useNavigate,
+  Outlet,
+  useLocation,
+} from "react-router-dom"
+import { useEffect } from "react"
+import PlayerPage from "./pages/Player"
+import PlaylistsPage from "@/pages/Playlists"
+import { MainMenu } from "@/components/MainMenu"
 
 function SpotifyCallback() {
   const navigate = useNavigate()
   useEffect(() => {
-    const hash = window.location.hash.substring(1)
-    const params = new URLSearchParams(hash)
+    const params = new URLSearchParams(
+      window.location.hash ? window.location.hash.substring(1) : window.location.search.substring(1)
+    )
     const accessToken = params.get("access_token")
     if (accessToken) {
       localStorage.setItem("spotify_access_token", accessToken)
-      navigate("/")
+      navigate("/playlists") // Redirect to playlists after login
+    } else {
+      navigate("/") // Or back to login on failure
     }
   }, [navigate])
   return <div>Logging in...</div>
 }
 
-function Dashboard() {
-  const [playlists, setPlaylists] = useState<SpotifyPlaylist[] | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchPlaylists = async () => {
-      const token = localStorage.getItem("spotify_access_token")
-      if (!token) {
-        setError("Authentication token not found.")
-        setLoading(false)
-        return
-      }
-
-      try {
-        setLoading(true)
-        const userPlaylists = await getAllUserPlaylists(token)
-        setPlaylists(userPlaylists)
-      } catch (e) {
-        console.error(e)
-        setError("Failed to fetch playlists. Your session may have expired.")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPlaylists()
-  }, [])
-
-  if (loading) {
-    return <div className="flex min-h-svh flex-col items-center justify-center">Loading playlists...</div>
-  }
-
-  if (error) {
-    return <div className="flex min-h-svh flex-col items-center justify-center">Error: {error}</div>
-  }
-
-  return (
-    <div className="container mx-auto py-10">
-      <h1 className="mb-6 text-left text-3xl font-bold">Your Spotify Playlists</h1>
-      {playlists && <PlaylistsTable playlists={playlists} />}
-    </div>
-  )
-}
-
-function Home() {
+function LoginPage() {
+  const navigate = useNavigate()
   const token = localStorage.getItem("spotify_access_token")
 
-  if (token) {
-    return <Dashboard />
-  }
+  useEffect(() => {
+    if (token) {
+      navigate("/playlists")
+    }
+  }, [token, navigate])
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center">
@@ -80,12 +48,39 @@ function Home() {
   )
 }
 
+function AppLayout() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const token = localStorage.getItem("spotify_access_token")
+
+  useEffect(() => {
+    if (!token) {
+      navigate("/")
+    }
+  }, [token, navigate, location.pathname])
+
+  if (!token) {
+    return null // or a loading spinner, but redirect will happen
+  }
+
+  return (
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+      <MainMenu />
+      <Outlet />
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<LoginPage />} />
         <Route path="/spotify-callback" element={<SpotifyCallback />} />
+        <Route element={<AppLayout />}>
+          <Route path="/player" element={<PlayerPage />} />
+          <Route path="/playlists" element={<PlaylistsPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )
