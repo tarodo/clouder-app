@@ -14,8 +14,10 @@ interface PlaylistsApiResponse {
 
 export interface SpotifyCurrentlyPlaying {
   is_playing: boolean;
+  progress_ms: number;
   item: {
     name: string;
+    duration_ms: number;
     artists: { name: string }[];
   } | null;
 }
