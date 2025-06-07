@@ -1,7 +1,4 @@
-import { useEffect, useState } from "react"
 import { PlaylistsTable } from "@/components/PlaylistsTable"
-import { getAllUserPlaylists } from "@/lib/spotify"
-import type { SpotifyPlaylist } from "@/lib/spotify"
 import { useUserPlaylists } from "@/hooks/useUserPlaylists"
 
 export default function PlaylistsPage() {

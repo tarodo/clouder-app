@@ -1,15 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import {
-  getCurrentlyPlaying,
-  playerNext,
-  playerPause,
-  playerPlay,
-  playerPrevious,
-  playerSeek,
-  type SpotifyCurrentlyPlaying,
-} from "@/lib/spotify"
-import {
   ArrowLeftCircle,
   ArrowRightCircle,
   ChevronsLeft,
@@ -17,7 +8,6 @@ import {
   PauseCircle,
   PlayCircle,
 } from "lucide-react"
-import { useEffect, useState, useCallback } from "react"
 import { useSpotifyPlayer } from "@/hooks/useSpotifyPlayer"
 import { formatMsToTime } from "@/lib/utils"
 
