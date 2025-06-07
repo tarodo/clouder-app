@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import {
@@ -11,6 +12,18 @@ import {
 import { useSpotifyPlayer } from "@/hooks/useSpotifyPlayer"
 import { formatMsToTime } from "@/lib/utils"
 
+interface ClouderWeekResponse {
+  clouder_week: string
+}
+
+interface SpPlaylist {
+  playlist_id: string
+  clouder_pl_name: string
+  clouder_pl_type: "base" | "category"
+  clouder_week: string
+  playlist_name: string
+}
+
 export default function PlayerPage() {
   const {
     track,
@@ -23,6 +36,84 @@ export default function PlayerPage() {
     handleRewind,
     handleFastForward,
   } = useSpotifyPlayer()
+
+  const [categoryPlaylists, setCategoryPlaylists] = useState<{ name: string; playlist_id: string }[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(false)
+  const [categoriesError, setCategoriesError] = useState<string | null>(null)
+
+  const handleMoveTrack = async (playlistId: string) => {
+    if (!track?.item) return
+    try {
+      await fetch(
+        `http://127.0.0.1:8000/clouder_week/move_track/${encodeURIComponent(track.item.id)}/${playlistId}`,
+        { method: "POST" }
+      )
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  useEffect(() => {
+    const fetchCategoryPlaylists = async () => {
+      if (!track?.context || track.context.type !== "playlist") {
+        setCategoryPlaylists([])
+        return
+      }
+
+      const playlistId = track.context.uri.split(":")[2]
+      if (!playlistId) {
+        setCategoryPlaylists([])
+        return
+      }
+
+      setCategoriesLoading(true)
+      setCategoriesError(null)
+      setCategoryPlaylists([])
+
+      try {
+        // Step 1: Get clouder_week
+        const weekResponse = await fetch(
+          `http://127.0.0.1:8000/clouder_playlists/${playlistId}/clouder_week`
+        )
+        if (!weekResponse.ok) {
+          throw new Error("Failed to fetch clouder week")
+        }
+        const weekData: ClouderWeekResponse = await weekResponse.json()
+        const clouderWeek = weekData.clouder_week
+
+        if (!clouderWeek) {
+          setCategoriesLoading(false)
+          return
+        }
+
+        // Step 2: Get playlists for the week
+        const playlistsResponse = await fetch(
+          `http://127.0.0.1:8000/clouder_weeks/${clouderWeek}/sp_playlists`
+        )
+        if (!playlistsResponse.ok) {
+          throw new Error("Failed to fetch playlists for the week")
+        }
+        const playlistsData: SpPlaylist[] = await playlistsResponse.json()
+
+        // Step 3: Filter and set state
+        const categoryObjects = playlistsData
+          .filter(p => p.clouder_pl_type === "category")
+          .map(p => ({
+            name: p.clouder_pl_name[0].toUpperCase() + p.clouder_pl_name.slice(1),
+            playlist_id: p.playlist_id,
+          }))
+
+        setCategoryPlaylists(categoryObjects)
+      } catch (error) {
+        console.error("Failed to fetch category playlists:", error)
+        setCategoriesError("Could not load category playlists.")
+      } finally {
+        setCategoriesLoading(false)
+      }
+    }
+
+    fetchCategoryPlaylists()
+  }, [track?.context?.uri])
 
   const progress =
     track?.item && track.item.duration_ms > 0
@@ -83,7 +174,7 @@ export default function PlayerPage() {
             <ChevronsRight className="size-10" />
           </Button>
         </div>
-        <div className="flex items-center gap-2 mt-4">
+        <div className="flex items-center gap-2">
           {[0, 0.2, 0.4, 0.6, 0.8].map((percentage, index) => (
             <Button
               key={percentage}
@@ -97,6 +188,19 @@ export default function PlayerPage() {
             </Button>
           ))}
         </div>
+      </div>
+      <div className="mt-8">
+        {categoriesLoading && <p className="text-center">Loading categories...</p>}
+        {categoriesError && <p className="text-center text-red-500">{categoriesError}</p>}
+        {categoryPlaylists.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-2 rounded-md border p-4">
+            {[...categoryPlaylists].sort((a, b) => a.name.localeCompare(b.name)).map(category => (
+              <Button key={category.playlist_id} variant="secondary" onClick={() => handleMoveTrack(category.playlist_id)}>
+                {category.name}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

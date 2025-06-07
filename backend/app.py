@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+
 import httpx
 from src.infrastructure.mongo_adapter import AsyncMongoAdapter
 from src.config import settings
@@ -11,6 +13,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/login")
 def login():
@@ -71,11 +81,32 @@ async def refresh_token(request: Request):
     return JSONResponse(token_data)
 
 
-@app.get("/clouder-weeks")
+@app.get("/clouder_weeks")
 async def get_clouder_weeks():
-    logger.info(f"Getting clouder weeks from mongo")
-    logger.info(f"Mongo URL: {settings.MONGO_URL}")
-    logger.info(f"Mongo DB: {settings.MONGO_DB}")
     async with AsyncMongoAdapter(settings) as mongo:
         data = await mongo.get_data("clouder_weeks")
     return JSONResponse(data)
+
+
+@app.get("/clouder_weeks/{clouder_week}/sp_playlists")
+async def get_clouder_week_playlists(clouder_week: str):
+    async with AsyncMongoAdapter(settings) as mongo:
+        data = await mongo.get_data("sp_playlists", {"clouder_week": clouder_week})
+    return JSONResponse(data)
+
+
+@app.get("/clouder_playlists/{sp_playlist_id}/clouder_week")
+async def get_clouder_playlist(sp_playlist_id: str):
+    async with AsyncMongoAdapter(settings) as mongo:
+        data = await mongo.get_data("sp_playlists", {"playlist_id": sp_playlist_id})
+        if not data:
+            return JSONResponse({"error": "Playlist not found"})
+        playlist_data = data[0]
+        clouder_week = playlist_data.get("clouder_week")
+    return JSONResponse({"clouder_week": clouder_week})
+
+
+@app.post("/clouder_week/move_track/{track_id}/{playlist_id}")
+async def move_track(track_id: str, playlist_id: str):
+    logger.info(f"Moving track {track_id} to playlist {playlist_id}")
+    return JSONResponse({"message": "Track moved successfully"})
