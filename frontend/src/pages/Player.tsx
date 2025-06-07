@@ -51,7 +51,7 @@ export default function PlayerPage() {
         </CardContent>
       </Card>
       <div className="mt-4">
-        <CategoryActions track={track} />
+        <CategoryActions track={track} onNext={handleNext} />
       </div>
     </div>
   )

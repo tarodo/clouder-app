@@ -3,14 +3,17 @@ import { useClouderPlaylists } from "@/hooks/useClouderPlaylists"
 import { moveTrackToPlaylist } from "@/lib/clouderApi"
 import type { SpotifyCurrentlyPlaying } from "@/lib/spotify"
 import { useState } from "react"
+import { cn } from "@/lib/utils"
 
 interface CategoryActionsProps {
   track: SpotifyCurrentlyPlaying | null
+  onNext: () => void
 }
 
-export function CategoryActions({ track }: CategoryActionsProps) {
+export function CategoryActions({ track, onNext }: CategoryActionsProps) {
   const { playlists, isLoading, error } = useClouderPlaylists(track)
   const [isMoving, setIsMoving] = useState(false)
+  const [highlightedPlaylistId, setHighlightedPlaylistId] = useState<string | null>(null)
 
   const handleMoveTrack = async (targetPlaylistId: string) => {
     if (!track?.item || !track.context) return
@@ -31,6 +34,8 @@ export function CategoryActions({ track }: CategoryActionsProps) {
         targetPlaylistId,
         trashPlaylist.playlist_id
       )
+      setHighlightedPlaylistId(targetPlaylistId)
+      onNext()
     } catch (e) {
       console.error("Failed to move track:", e)
       // TODO: Show a toast notification to the user
@@ -58,7 +63,13 @@ export function CategoryActions({ track }: CategoryActionsProps) {
           .sort((a, b) => a.name.localeCompare(b.name))
           .slice(0, 8)
           .map(category => (
-            <Button key={category.playlist_id} variant="secondary" className="transition-all active:scale-95 hover:opacity-90 w-32 h-10" onClick={() => handleMoveTrack(category.playlist_id)} disabled={isMoving}>
+            <Button
+              key={category.playlist_id}
+              variant="secondary"
+              className={cn("transition-all active:scale-95 hover:opacity-90 w-32 h-10 text-black", highlightedPlaylistId === category.playlist_id && "bg-gray-700 hover:bg-gray-800 text-white")}
+              onClick={() => handleMoveTrack(category.playlist_id)}
+              disabled={isMoving}
+            >
               {category.name}
             </Button>
           ))}

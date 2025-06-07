@@ -15,6 +15,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+app.state.cache = {}
 
 app.add_middleware(
     CORSMiddleware,
@@ -91,21 +92,34 @@ async def get_clouder_weeks():
 
 
 @app.get("/clouder_weeks/{clouder_week}/sp_playlists")
-async def get_clouder_week_playlists(clouder_week: str):
+async def get_clouder_week_playlists(clouder_week: str, cache: bool = True):
+    cache_key = f"sp_playlists_{clouder_week}"
+    if cache and cache_key in app.state.cache:
+        return JSONResponse(app.state.cache[cache_key])
+        
     async with AsyncMongoAdapter(settings) as mongo:
         data = await mongo.get_data("sp_playlists", {"clouder_week": clouder_week})
+        if cache:
+            app.state.cache[cache_key] = data
     return JSONResponse(data)
 
 
-@app.get("/clouder_playlists/{sp_playlist_id}/clouder_week")
-async def get_clouder_playlist(sp_playlist_id: str):
+@app.get("/clouder_playlists/{sp_playlist_id}/clouder_week") 
+async def get_clouder_playlist(sp_playlist_id: str, cache: bool = True):
+    cache_key = f"clouder_week_{sp_playlist_id}"
+    if cache and cache_key in app.state.cache:
+        return JSONResponse(app.state.cache[cache_key])
+
     async with AsyncMongoAdapter(settings) as mongo:
         data = await mongo.get_data("sp_playlists", {"playlist_id": sp_playlist_id})
         if not data:
             return JSONResponse({"error": "Playlist not found"})
         playlist_data = data[0]
         clouder_week = playlist_data.get("clouder_week")
-    return JSONResponse({"clouder_week": clouder_week})
+        response = {"clouder_week": clouder_week}
+        if cache:
+            app.state.cache[cache_key] = response
+    return JSONResponse(response)
 
 
 @app.post("/clouder_playlists/move_track")
