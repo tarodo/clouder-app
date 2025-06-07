@@ -44,8 +44,9 @@ export default function PlayerPage() {
   const handleMoveTrack = async (playlistId: string) => {
     if (!track?.item) return
     try {
+      const sp_token = localStorage.getItem('spotify_access_token')
       await fetch(
-        `http://127.0.0.1:8000/clouder_week/move_track/${encodeURIComponent(track.item.id)}/${playlistId}`,
+        `http://127.0.0.1:8000/clouder_week/move_track/${encodeURIComponent(track.item.id)}/${playlistId}?sp_token=${sp_token}`,
         { method: "POST" }
       )
     } catch (e) {
@@ -193,12 +194,19 @@ export default function PlayerPage() {
         {categoriesLoading && <p className="text-center">Loading categories...</p>}
         {categoriesError && <p className="text-center text-red-500">{categoriesError}</p>}
         {categoryPlaylists.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-2 rounded-md border p-4">
-            {[...categoryPlaylists].sort((a, b) => a.name.localeCompare(b.name)).map(category => (
-              <Button key={category.playlist_id} variant="secondary" onClick={() => handleMoveTrack(category.playlist_id)}>
-                {category.name}
-              </Button>
-            ))}
+          <div className="grid grid-cols-4 gap-2 rounded-md border p-4 max-w-[36rem] mx-auto">
+            <div className="col-span-4 flex flex-wrap justify-center gap-2">
+              {[...categoryPlaylists].sort((a, b) => a.name.localeCompare(b.name)).slice(0, 8).map((category, idx) => (
+                <Button 
+                  key={category.playlist_id} 
+                  variant="secondary"
+                  className="transition-all active:scale-95 hover:opacity-90 w-32 h-10" 
+                  onClick={() => handleMoveTrack(category.playlist_id)}
+                >
+                  {category.name}
+                </Button>
+              ))}
+            </div>
           </div>
         )}
       </div>

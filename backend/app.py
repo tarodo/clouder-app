@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.params import Query
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -107,6 +108,7 @@ async def get_clouder_playlist(sp_playlist_id: str):
 
 
 @app.post("/clouder_week/move_track/{track_id}/{playlist_id}")
-async def move_track(track_id: str, playlist_id: str):
+async def move_track(track_id: str, playlist_id: str, sp_token: str = Query(...)):
     logger.info(f"Moving track {track_id} to playlist {playlist_id}")
+    logger.info(f"SP token: {sp_token}")
     return JSONResponse({"message": "Track moved successfully"})
