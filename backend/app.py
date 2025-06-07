@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 import httpx
+from src.infrastructure.sp_adapter import SpAdapter
 from src.infrastructure.mongo_adapter import AsyncMongoAdapter
 from src.config import settings
 from urllib.parse import urlencode
@@ -107,8 +108,19 @@ async def get_clouder_playlist(sp_playlist_id: str):
     return JSONResponse({"clouder_week": clouder_week})
 
 
-@app.post("/clouder_week/move_track/{track_id}/{playlist_id}")
-async def move_track(track_id: str, playlist_id: str, sp_token: str = Query(...)):
-    logger.info(f"Moving track {track_id} to playlist {playlist_id}")
-    logger.info(f"SP token: {sp_token}")
+@app.post("/clouder_playlists/move_track")
+async def move_track(request: Request, sp_token: str = Query(...)):
+    body = await request.json()
+    track_id = body.get("track_id")
+    source_playlist_id = body.get("source_playlist_id")
+    target_playlist_id = body.get("target_playlist_id")
+    trash_playlist_id = body.get("trash_playlist_id")
+    if source_playlist_id == target_playlist_id:
+        return JSONResponse({"message": "Track already in target playlist"})
+    sp_adapter = SpAdapter()
+    await sp_adapter.add_track_to_playlist(sp_token, track_id, target_playlist_id)
+    if trash_playlist_id != target_playlist_id:
+        await sp_adapter.add_track_to_playlist(sp_token, track_id, trash_playlist_id)
+    if source_playlist_id != trash_playlist_id:
+        await sp_adapter.remove_track_from_playlist(sp_token, track_id, source_playlist_id)
     return JSONResponse({"message": "Track moved successfully"})

@@ -42,13 +42,13 @@ export default function PlayerPage() {
   const [categoriesError, setCategoriesError] = useState<string | null>(null)
   const categoryCache = useRef<{ [playlistId: string]: { week: string, categories: { name: string; playlist_id: string }[] } }>({})
 
-  const handleMoveTrack = async (playlistId: string) => {
+  const handleMoveTrack = async (targetPlaylistId: string, sourcePlaylistId: string, trashPlaylistId: string) => {
     if (!track?.item) return
     try {
       const sp_token = localStorage.getItem('spotify_access_token')
       await fetch(
-        `http://127.0.0.1:8000/clouder_week/move_track/${encodeURIComponent(track.item.id)}/${playlistId}?sp_token=${sp_token}`,
-        { method: "POST" }
+        `http://127.0.0.1:8000/clouder_playlists/move_track?sp_token=${sp_token}`,
+        { method: "POST", body: JSON.stringify({ track_id: track.item.id, source_playlist_id: sourcePlaylistId, target_playlist_id: targetPlaylistId, trash_playlist_id: trashPlaylistId }) }
       )
     } catch (e) {
       console.error(e)
@@ -203,7 +203,7 @@ export default function PlayerPage() {
                   key={category.playlist_id} 
                   variant="secondary"
                   className="transition-all active:scale-95 hover:opacity-90 w-32 h-10" 
-                  onClick={() => handleMoveTrack(category.playlist_id)}
+                  onClick={() => handleMoveTrack(category.playlist_id, track.context?.uri.split(":")[2] || "", categoryPlaylists.find(p => p.name.toLowerCase() === "trash")?.playlist_id || "")}
                 >
                   {category.name}
                 </Button>
