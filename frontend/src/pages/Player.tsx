@@ -101,7 +101,7 @@ export default function PlayerPage() {
         const playlistsData: SpPlaylist[] = await playlistsResponse.json()
 
         const categoryObjects = playlistsData
-          .filter(p => p.clouder_pl_type === "category")
+          .filter(p => p.clouder_pl_type === "category" || p.clouder_pl_name === "trash")
           .map(p => ({
             name: p.clouder_pl_name[0].toUpperCase() + p.clouder_pl_name.slice(1),
             playlist_id: p.playlist_id,
@@ -136,9 +136,8 @@ export default function PlayerPage() {
   }
 
   return (
-    <div>
-      <h1 className="mb-6 text-left text-3xl font-bold">Player</h1>
-      <div className="flex flex-col items-center justify-center gap-4 rounded-md border p-8">
+    <div className="mt-4 max-w-[36rem] mx-auto">
+      <div className="flex flex-col items-center justify-center gap-4 rounded-md border p-6">
         <div className="text-center">
           <p className="text-lg font-semibold">
             {track?.item?.name ?? "No track playing"}
@@ -148,7 +147,7 @@ export default function PlayerPage() {
           </p>
         </div>
         {track?.item && (
-          <div className="w-1/2 mx-auto flex items-center gap-2">
+          <div className="w-full flex items-center gap-2">
             <span className="text-xs tabular-nums min-w-[36px] text-right">
               {formatMsToTime(track.progress_ms)}
             </span>
@@ -194,11 +193,10 @@ export default function PlayerPage() {
           ))}
         </div>
       </div>
-      <div className="mt-8">
+      <div className="mt-4 max-w-[36rem] mx-auto">
         {categoriesLoading && <p className="text-center">Loading categories...</p>}
-        {/* {categoriesError && <p className="text-center text-red-500">{categoriesError}</p>} */}
         {categoryPlaylists.length > 0 && (
-          <div className="grid grid-cols-4 gap-2 rounded-md border p-4 max-w-[36rem] mx-auto">
+          <div className="grid grid-cols-4 gap-2 rounded-md border p-4 mx-auto">
             <div className="col-span-4 flex flex-wrap justify-center gap-2">
               {[...categoryPlaylists].sort((a, b) => a.name.localeCompare(b.name)).slice(0, 8).map((category, idx) => (
                 <Button 

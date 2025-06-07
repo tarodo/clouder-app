@@ -9,7 +9,7 @@ export function MainMenu() {
   const navigate = useNavigate()
 
   return (
-    <Menubar className="mb-4">
+    <Menubar className="mb-4 max-w-[36rem] mx-auto">
       <MenubarMenu>
         <MenubarTrigger className="cursor-pointer" onClick={() => navigate("/player")}>Player</MenubarTrigger>
       </MenubarMenu>
