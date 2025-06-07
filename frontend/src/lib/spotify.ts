@@ -27,9 +27,11 @@ export interface SpotifyCurrentlyPlaying {
   } | null;
 }
 
+const SPOTIFY_API_BASE = "https://api.spotify.com/v1"
+
 export async function getAllUserPlaylists(token: string): Promise<SpotifyPlaylist[]> {
   let playlists: SpotifyPlaylist[] = []
-  let url: string | null = "https://api.spotify.com/v1/me/playlists?limit=50"
+  let url: string | null = `${SPOTIFY_API_BASE}/me/playlists?limit=50`
 
   while (url) {
     const response = await fetch(url, {
@@ -51,7 +53,7 @@ export async function getAllUserPlaylists(token: string): Promise<SpotifyPlaylis
 }
 
 export async function getCurrentlyPlaying(token:string): Promise<SpotifyCurrentlyPlaying | null> {
-    const response = await fetch("https://api.spotify.com/v1/me/player/currently-playing", {
+    const response = await fetch(`${SPOTIFY_API_BASE}/me/player/currently-playing`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -67,7 +69,7 @@ export async function getCurrentlyPlaying(token:string): Promise<SpotifyCurrentl
 }
 
 export async function playerNext(token: string): Promise<void> {
-    const response = await fetch("https://api.spotify.com/v1/me/player/next", {
+    const response = await fetch(`${SPOTIFY_API_BASE}/me/player/next`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -79,7 +81,7 @@ export async function playerNext(token: string): Promise<void> {
 }
 
 export async function playerPrevious(token: string): Promise<void> {
-    const response = await fetch("https://api.spotify.com/v1/me/player/previous", {
+    const response = await fetch(`${SPOTIFY_API_BASE}/me/player/previous`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -91,7 +93,7 @@ export async function playerPrevious(token: string): Promise<void> {
 }
 
 export async function playerPlay(token: string): Promise<void> {
-    const response = await fetch("https://api.spotify.com/v1/me/player/play", {
+    const response = await fetch(`${SPOTIFY_API_BASE}/me/player/play`, {
         method: 'PUT',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -103,7 +105,7 @@ export async function playerPlay(token: string): Promise<void> {
 }
 
 export async function playerPause(token: string): Promise<void> {
-    const response = await fetch("https://api.spotify.com/v1/me/player/pause", {
+    const response = await fetch(`${SPOTIFY_API_BASE}/me/player/pause`, {
         method: 'PUT',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -115,7 +117,7 @@ export async function playerPause(token: string): Promise<void> {
 }
 
 export async function playerSeek(token: string, positionMs: number): Promise<void> {
-    const response = await fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${Math.round(positionMs)}`, {
+    const response = await fetch(`${SPOTIFY_API_BASE}/me/player/seek?position_ms=${Math.round(positionMs)}`, {
         method: 'PUT',
         headers: {
             Authorization: `Bearer ${token}`,

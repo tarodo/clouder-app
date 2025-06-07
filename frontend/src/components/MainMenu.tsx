@@ -3,21 +3,30 @@ import {
   MenubarMenu,
   MenubarTrigger,
 } from "@/components/ui/menubar"
-import { useNavigate } from "react-router-dom"
+import { NavLink } from "react-router-dom"
+import { cn } from "@/lib/utils"
 
 export function MainMenu() {
-  const navigate = useNavigate()
-
   return (
     <Menubar className="mb-4 max-w-[36rem] mx-auto">
       <MenubarMenu>
-        <MenubarTrigger className="cursor-pointer" onClick={() => navigate("/player")}>Player</MenubarTrigger>
+        <MenubarTrigger asChild className="cursor-pointer">
+          <NavLink to="/player" className={({ isActive }) => cn(isActive && "text-primary font-semibold")}> 
+            Player
+          </NavLink>
+        </MenubarTrigger>
       </MenubarMenu>
       <MenubarMenu>
-        <MenubarTrigger className="cursor-pointer" onClick={() => navigate("/playlists")}>Playlists</MenubarTrigger>
+        <MenubarTrigger asChild className="cursor-pointer">
+          <NavLink to="/playlists" className={({ isActive }) => cn(isActive && "text-primary font-semibold")}> 
+            Playlists
+          </NavLink>
+        </MenubarTrigger>
       </MenubarMenu>
       <MenubarMenu>
-        <MenubarTrigger className="cursor-pointer" onClick={() => navigate("/logout")}>Logout</MenubarTrigger>
+        <MenubarTrigger asChild className="cursor-pointer">
+          <NavLink to="/logout">Logout</NavLink>
+        </MenubarTrigger>
       </MenubarMenu>
     </Menubar>
   )

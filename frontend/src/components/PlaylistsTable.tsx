@@ -63,18 +63,18 @@ export function PlaylistsTable({ playlists }: PlaylistsTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead style={{ width: "20%" }}>Playlist ID</TableHead>
-              <TableHead style={{ width: "20%" }}>Playlist Name</TableHead>
-              <TableHead style={{ width: "20%" }}>Playlist URL</TableHead>
-              <TableHead style={{ width: "40%" }}>Playlist Description</TableHead>
+              <TableHead className="w-[20%]">Playlist ID</TableHead>
+              <TableHead className="w-[20%]">Playlist Name</TableHead>
+              <TableHead className="w-[10%]">Link</TableHead>
+              <TableHead className="w-[50%]">Description</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentPlaylists.map(playlist => (
               <TableRow key={playlist.id}>
-                <TableCell style={{ width: "20%" }} className="font-mono text-xs">{playlist.id}</TableCell>
-                <TableCell style={{ width: "20%" }} className="font-medium">{playlist.name}</TableCell>
-                <TableCell style={{ width: "20%" }}>
+                <TableCell className="font-mono text-xs">{playlist.id}</TableCell>
+                <TableCell className="font-medium">{playlist.name}</TableCell>
+                <TableCell>
                   <a
                     href={playlist.external_urls.spotify}
                     target="_blank"
@@ -84,7 +84,7 @@ export function PlaylistsTable({ playlists }: PlaylistsTableProps) {
                     Open
                   </a>
                 </TableCell>
-                <TableCell style={{ width: "40%" }} className="max-w-xs truncate whitespace-normal">
+                <TableCell className="max-w-sm truncate whitespace-normal">
                   {playlist.description || "-"}
                 </TableCell>
               </TableRow>
