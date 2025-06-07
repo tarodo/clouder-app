@@ -6,11 +6,14 @@ import {
   playerPause,
   playerPlay,
   playerPrevious,
+  playerSeek,
   type SpotifyCurrentlyPlaying,
 } from "@/lib/spotify"
 import {
   ArrowLeftCircle,
   ArrowRightCircle,
+  ChevronsLeft,
+  ChevronsRight,
   PauseCircle,
   PlayCircle,
 } from "lucide-react"
@@ -63,6 +66,30 @@ export default function PlayerPage() {
     // TODO: add a loading state for the button
   }
 
+  const handleSeek = async (percentage: number) => {
+    if (!token || !track?.item) return
+    const positionMs = track.item.duration_ms * percentage
+    await playerSeek(token, positionMs)
+    setTimeout(fetchCurrentTrack, 500) // Give Spotify time to update
+  }
+
+  const handleRewind = async () => {
+    if (!token || !track) return
+    const newPositionMs = Math.max(0, track.progress_ms - 10000)
+    await playerSeek(token, newPositionMs)
+    setTimeout(fetchCurrentTrack, 500)
+  }
+
+  const handleFastForward = async () => {
+    if (!token || !track?.item) return
+    const newPositionMs = Math.min(
+      track.item.duration_ms,
+      track.progress_ms + 10000,
+    )
+    await playerSeek(token, newPositionMs)
+    setTimeout(fetchCurrentTrack, 500)
+  }
+
   // Обработчик клавиш
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
@@ -75,6 +102,12 @@ export default function PlayerPage() {
     } else if (e.key === "<" || (e.shiftKey && e.key === ",")) {
       e.preventDefault()
       handlePrevious()
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault()
+      handleRewind()
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault()
+      handleFastForward()
     }
   }
 
@@ -124,19 +157,39 @@ export default function PlayerPage() {
           </div>
         )}
         <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={handleRewind} disabled={!track}>
+            <ChevronsLeft className="size-10" />
+          </Button>
           <Button variant="ghost" size="icon" onClick={handlePrevious} disabled={!track}>
-            <ArrowLeftCircle className="size-8" />
+            <ArrowLeftCircle className="size-10" />
           </Button>
           <Button variant="ghost" size="icon" onClick={handlePlayPause} disabled={!track}>
             {track?.is_playing ? (
-              <PauseCircle className="size-10" />
+              <PauseCircle className="size-12" />
             ) : (
-              <PlayCircle className="size-10" />
+              <PlayCircle className="size-12" />
             )}
           </Button>
           <Button variant="ghost" size="icon" onClick={handleNext} disabled={!track}>
-            <ArrowRightCircle className="size-8" />
+            <ArrowRightCircle className="size-10" />
           </Button>
+          <Button variant="ghost" size="icon" onClick={handleFastForward} disabled={!track?.item}>
+            <ChevronsRight className="size-10" />
+          </Button>
+        </div>
+        <div className="flex items-center gap-2 mt-4">
+          {[0, 0.2, 0.4, 0.6, 0.8].map((percentage, index) => (
+            <Button
+              key={percentage}
+              variant="outline"
+              size="icon"
+              className="rounded-full w-10 h-10 bg-white text-black border-3 border-black font-bold"
+              onClick={() => handleSeek(percentage)}
+              disabled={!track?.item}
+            >
+              {index + 1}
+            </Button>
+          ))}
         </div>
       </div>
     </div>

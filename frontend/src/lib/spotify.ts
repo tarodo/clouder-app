@@ -107,4 +107,16 @@ export async function playerPause(token: string): Promise<void> {
     if (!response.ok) {
       throw new Error("Failed to pause track");
     }
+}
+
+export async function playerSeek(token: string, positionMs: number): Promise<void> {
+    const response = await fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${Math.round(positionMs)}`, {
+        method: 'PUT',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to seek track position");
+    }
 } 
