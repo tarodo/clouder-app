@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import {
@@ -40,6 +40,7 @@ export default function PlayerPage() {
   const [categoryPlaylists, setCategoryPlaylists] = useState<{ name: string; playlist_id: string }[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(false)
   const [categoriesError, setCategoriesError] = useState<string | null>(null)
+  const categoryCache = useRef<{ [playlistId: string]: { week: string, categories: { name: string; playlist_id: string }[] } }>({})
 
   const handleMoveTrack = async (playlistId: string) => {
     if (!track?.item) return
@@ -67,12 +68,16 @@ export default function PlayerPage() {
         return
       }
 
+      if (categoryCache.current[playlistId]) {
+        setCategoryPlaylists(categoryCache.current[playlistId].categories)
+        return
+      }
+
       setCategoriesLoading(true)
       setCategoriesError(null)
       setCategoryPlaylists([])
 
       try {
-        // Step 1: Get clouder_week
         const weekResponse = await fetch(
           `http://127.0.0.1:8000/clouder_playlists/${playlistId}/clouder_week`
         )
@@ -87,7 +92,6 @@ export default function PlayerPage() {
           return
         }
 
-        // Step 2: Get playlists for the week
         const playlistsResponse = await fetch(
           `http://127.0.0.1:8000/clouder_weeks/${clouderWeek}/sp_playlists`
         )
@@ -96,7 +100,6 @@ export default function PlayerPage() {
         }
         const playlistsData: SpPlaylist[] = await playlistsResponse.json()
 
-        // Step 3: Filter and set state
         const categoryObjects = playlistsData
           .filter(p => p.clouder_pl_type === "category")
           .map(p => ({
@@ -104,6 +107,7 @@ export default function PlayerPage() {
             playlist_id: p.playlist_id,
           }))
 
+        categoryCache.current[playlistId] = { week: clouderWeek, categories: categoryObjects }
         setCategoryPlaylists(categoryObjects)
       } catch (error) {
         console.error("Failed to fetch category playlists:", error)
@@ -192,7 +196,7 @@ export default function PlayerPage() {
       </div>
       <div className="mt-8">
         {categoriesLoading && <p className="text-center">Loading categories...</p>}
-        {categoriesError && <p className="text-center text-red-500">{categoriesError}</p>}
+        {/* {categoriesError && <p className="text-center text-red-500">{categoriesError}</p>} */}
         {categoryPlaylists.length > 0 && (
           <div className="grid grid-cols-4 gap-2 rounded-md border p-4 max-w-[36rem] mx-auto">
             <div className="col-span-4 flex flex-wrap justify-center gap-2">
