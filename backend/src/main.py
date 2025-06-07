@@ -1,0 +1,43 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import logging
+from contextlib import asynccontextmanager
+
+from src.config import settings
+from src.api.routers import auth, playlists
+from src.infrastructure.mongo_adapter import AsyncMongoAdapter
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # on startup
+    logger.info("Connecting to MongoDB...")
+    mongo_adapter = AsyncMongoAdapter(settings)
+    await mongo_adapter.connect()
+    app.state.mongo_adapter = mongo_adapter
+    app.state.cache = {}
+    yield
+    # on shutdown
+    logger.info("Closing MongoDB connection...")
+    await app.state.mongo_adapter.close_connection()
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router)
+app.include_router(playlists.router)
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to Clouder App API"} 
