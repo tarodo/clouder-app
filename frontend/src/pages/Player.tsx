@@ -102,12 +102,27 @@ export default function PlayerPage() {
     } else if (e.key === "<" || (e.shiftKey && e.key === ",")) {
       e.preventDefault()
       handlePrevious()
-    } else if (e.key === "ArrowLeft") {
+    } else if (e.key === ",") {
       e.preventDefault()
       handleRewind()
-    } else if (e.key === "ArrowRight") {
+    } else if (e.key === ".") {
       e.preventDefault()
       handleFastForward()
+    } else if (e.key === "1") {
+      e.preventDefault()
+      handleSeek(0)
+    } else if (e.key === "2") {
+      e.preventDefault()
+      handleSeek(0.2)
+    } else if (e.key === "3") {
+      e.preventDefault()
+      handleSeek(0.4)
+    } else if (e.key === "4") {
+      e.preventDefault()
+      handleSeek(0.6)
+    } else if (e.key === "5") {
+      e.preventDefault()
+      handleSeek(0.8)
     }
   }
 
