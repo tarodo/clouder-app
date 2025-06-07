@@ -2,43 +2,19 @@ import { useEffect, useState } from "react"
 import { PlaylistsTable } from "@/components/PlaylistsTable"
 import { getAllUserPlaylists } from "@/lib/spotify"
 import type { SpotifyPlaylist } from "@/lib/spotify"
+import { useUserPlaylists } from "@/hooks/useUserPlaylists"
 
 export default function PlaylistsPage() {
-  const [playlists, setPlaylists] = useState<SpotifyPlaylist[] | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchPlaylists = async () => {
-      const token = localStorage.getItem("spotify_access_token")
-      if (!token) {
-        // This case is handled by AppLayout, but as a fallback:
-        setError("Authentication token not found.")
-        setLoading(false)
-        return
-      }
-
-      try {
-        setLoading(true)
-        const userPlaylists = await getAllUserPlaylists(token)
-        setPlaylists(userPlaylists)
-      } catch (e) {
-        console.error(e)
-        setError("Failed to fetch playlists. Your session may have expired.")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPlaylists()
-  }, [])
+  const { playlists, loading, error } = useUserPlaylists()
 
   if (loading) {
     return <div className="flex flex-col items-center justify-center">Loading playlists...</div>
   }
-
   if (error) {
-    return <div className="flex flex-col items-center justify-center">Error: {error}</div>
+    return <div className="flex flex-col items-center justify-center text-red-500">{error}</div>
+  }
+  if (!playlists) {
+    return <div className="flex flex-col items-center justify-center">No playlists found</div>
   }
 
   return (

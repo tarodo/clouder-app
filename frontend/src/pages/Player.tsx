@@ -18,134 +18,35 @@ import {
   PlayCircle,
 } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
+import { useSpotifyPlayer } from "@/hooks/useSpotifyPlayer"
+import { formatMsToTime } from "@/lib/utils"
 
 export default function PlayerPage() {
-  const [track, setTrack] = useState<SpotifyCurrentlyPlaying | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const token = localStorage.getItem("spotify_access_token")
-
-  const fetchCurrentTrack = useCallback(async () => {
-    if (!token) {
-      setError("Authentication token not found.")
-      setLoading(false)
-      return
-    }
-    try {
-      const currentTrack = await getCurrentlyPlaying(token)
-      setTrack(currentTrack)
-    } catch (e) {
-      console.error(e)
-      setError("Failed to fetch current track. Your session may have expired.")
-    } finally {
-      setLoading(false)
-    }
-  }, [token])
-
-  const handlePrevious = async () => {
-    if (!token) return
-    await playerPrevious(token)
-    setTimeout(fetchCurrentTrack, 500) // Give Spotify time to update
-  }
-
-  const handleNext = async () => {
-    if (!token) return
-    await playerNext(token)
-    setTimeout(fetchCurrentTrack, 500)
-  }
-
-  const handlePlayPause = async () => {
-    if (!token) return
-    try {
-      await playerPause(token)
-    } catch (e) {
-      await playerPlay(token)
-    }
-    setTimeout(fetchCurrentTrack, 500)
-    // TODO: add a loading state for the button
-  }
-
-  const handleSeek = async (percentage: number) => {
-    if (!token || !track?.item) return
-    const positionMs = track.item.duration_ms * percentage
-    await playerSeek(token, positionMs)
-    setTimeout(fetchCurrentTrack, 500) // Give Spotify time to update
-  }
-
-  const handleRewind = async () => {
-    if (!token || !track) return
-    const newPositionMs = Math.max(0, track.progress_ms - 10000)
-    await playerSeek(token, newPositionMs)
-    setTimeout(fetchCurrentTrack, 500)
-  }
-
-  const handleFastForward = async () => {
-    if (!token || !track?.item) return
-    const newPositionMs = Math.min(
-      track.item.duration_ms,
-      track.progress_ms + 10000,
-    )
-    await playerSeek(token, newPositionMs)
-    setTimeout(fetchCurrentTrack, 500)
-  }
-
-  // Обработчик клавиш
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-    if (e.key === " ") {
-      e.preventDefault()
-      handlePlayPause()
-    } else if (e.key === ">" || (e.shiftKey && e.key === ".")) {
-      e.preventDefault()
-      handleNext()
-    } else if (e.key === "<" || (e.shiftKey && e.key === ",")) {
-      e.preventDefault()
-      handlePrevious()
-    } else if (e.key === ",") {
-      e.preventDefault()
-      handleRewind()
-    } else if (e.key === ".") {
-      e.preventDefault()
-      handleFastForward()
-    } else if (e.key === "1") {
-      e.preventDefault()
-      handleSeek(0)
-    } else if (e.key === "2") {
-      e.preventDefault()
-      handleSeek(0.2)
-    } else if (e.key === "3") {
-      e.preventDefault()
-      handleSeek(0.4)
-    } else if (e.key === "4") {
-      e.preventDefault()
-      handleSeek(0.6)
-    } else if (e.key === "5") {
-      e.preventDefault()
-      handleSeek(0.8)
-    }
-  }
-
-  useEffect(() => {
-    setLoading(true)
-    fetchCurrentTrack()
-    const intervalId = setInterval(fetchCurrentTrack, 2000)
-    window.addEventListener("keydown", handleKeyDown)
-    return () => {
-      clearInterval(intervalId)
-      window.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [fetchCurrentTrack])
+  const {
+    track,
+    loading,
+    error,
+    handlePrevious,
+    handleNext,
+    handlePlayPause,
+    handleSeek,
+    handleRewind,
+    handleFastForward,
+  } = useSpotifyPlayer()
 
   const progress =
-    track?.item && track.item.duration_ms > 0 ? (track.progress_ms / track.item.duration_ms) * 100 : 0
+    track?.item && track.item.duration_ms > 0
+      ? (track.progress_ms / track.item.duration_ms) * 100
+      : 0
 
   if (loading) {
     return <div className="flex flex-col items-center justify-center">Loading player...</div>
   }
-
   if (error) {
-    return <div className="flex flex-col items-center justify-center">Error: {error}</div>
+    return <div className="flex flex-col items-center justify-center text-red-500">{error}</div>
+  }
+  if (!track) {
+    return <div className="flex flex-col items-center justify-center">No track playing</div>
   }
 
   return (
@@ -209,12 +110,4 @@ export default function PlayerPage() {
       </div>
     </div>
   )
-}
-
-function formatMsToTime(ms: number) {
-  if (!ms || ms < 0) return "0:00"
-  const totalSeconds = Math.floor(ms / 1000)
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`
 } 
