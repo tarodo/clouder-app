@@ -66,7 +66,7 @@ export default function PlayerPage() {
   // Обработчик клавиш
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-    if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+    if (e.key === " ") {
       e.preventDefault()
       handlePlayPause()
     } else if (e.key === ">" || (e.shiftKey && e.key === ".")) {

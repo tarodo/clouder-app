@@ -16,6 +16,9 @@ export function MainMenu() {
       <MenubarMenu>
         <MenubarTrigger className="cursor-pointer" onClick={() => navigate("/playlists")}>Playlists</MenubarTrigger>
       </MenubarMenu>
+      <MenubarMenu>
+        <MenubarTrigger className="cursor-pointer" onClick={() => navigate("/logout")}>Logout</MenubarTrigger>
+      </MenubarMenu>
     </Menubar>
   )
 } 

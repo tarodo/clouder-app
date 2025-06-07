@@ -19,8 +19,10 @@ function SpotifyCallback() {
       window.location.hash ? window.location.hash.substring(1) : window.location.search.substring(1)
     )
     const accessToken = params.get("access_token")
+    const refreshToken = params.get("refresh_token")
     if (accessToken) {
       localStorage.setItem("spotify_access_token", accessToken)
+      localStorage.setItem("spotify_refresh_token", refreshToken || '')
       navigate("/playlists") // Redirect to playlists after login
     } else {
       navigate("/") // Or back to login on failure
@@ -46,6 +48,16 @@ function LoginPage() {
       </Button>
     </div>
   )
+}
+
+function LogoutPage() {
+  const navigate = useNavigate()
+  useEffect(() => {
+    localStorage.removeItem("spotify_access_token")
+    localStorage.removeItem("spotify_refresh_token")
+    navigate("/")
+  }, [navigate])
+  return <div>Logged out</div>
 }
 
 function AppLayout() {
@@ -80,6 +92,7 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/player" element={<PlayerPage />} />
           <Route path="/playlists" element={<PlaylistsPage />} />
+          <Route path="/logout" element={<LogoutPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
