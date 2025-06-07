@@ -1,5 +1,4 @@
 from typing import List, Dict, Any
-import logging
 
 from src.infrastructure.mongo_adapter import AsyncMongoAdapter
 from src.infrastructure.sp_adapter import SpAdapter
@@ -9,8 +8,6 @@ from src.schemas.playlists import (
     SpotifyPlaylist,
     ClouderWeekResponse,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class PlaylistService:
@@ -36,7 +33,6 @@ class PlaylistService:
         data = await self.mongo.get_data("sp_playlists", {"clouder_week": clouder_week})
         if use_cache:
             self.cache[cache_key] = data
-        logger.info(f"Data: {data}")
         return [SpotifyPlaylist.model_validate(item) for item in data]
 
     async def get_week_by_playlist(

@@ -1,14 +1,11 @@
 from fastapi import Request, Depends
 from functools import lru_cache
-import logging
 
 from src.config import AppSettings, settings
 from src.infrastructure.mongo_adapter import AsyncMongoAdapter
 from src.infrastructure.sp_adapter import SpAdapter
 from src.services.auth import SpotifyAuthService
 from src.services.playlists import PlaylistService
-
-logger = logging.getLogger(__name__)
 
 
 @lru_cache

@@ -1,5 +1,4 @@
 from typing import List
-import logging
 from fastapi import APIRouter, Depends, Query, HTTPException
 
 from src.services.playlists import PlaylistService
@@ -10,8 +9,6 @@ from src.schemas.playlists import (
     ClouderWeekResponse,
 )
 from src.api.dependencies import get_playlist_service
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Playlists"])
 

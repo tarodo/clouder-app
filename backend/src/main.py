@@ -2,12 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 from contextlib import asynccontextmanager
+from logging.config import dictConfig
 
 from src.config import settings
 from src.api.routers import auth, playlists
 from src.infrastructure.mongo_adapter import AsyncMongoAdapter
+from src.logging_config import LOGGING_CONFIG
 
-logging.basicConfig(level=logging.INFO)
+dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
 
 

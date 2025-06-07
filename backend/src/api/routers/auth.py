@@ -1,13 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from urllib.parse import urlencode
-import logging
 
 from src.services.auth import SpotifyAuthService
 from src.schemas.auth import TokenRefreshRequest, TokenResponse
 from src.api.dependencies import get_spotify_auth_service
 
-logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Authentication"])
 
@@ -15,7 +13,6 @@ router = APIRouter(tags=["Authentication"])
 @router.get("/login")
 async def login(auth_service: SpotifyAuthService = Depends(get_spotify_auth_service)):
     auth_url = auth_service.get_auth_url()
-    logger.info(f"Redirecting to Spotify auth URL: {auth_url}")
     return RedirectResponse(auth_url)
 
 
