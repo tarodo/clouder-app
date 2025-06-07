@@ -1,26 +1,14 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import RedirectResponse, JSONResponse
 import httpx
-from pydantic_settings import BaseSettings
+from src.infrastructure.mongo_adapter import AsyncMongoAdapter
+from src.config import settings
 from urllib.parse import urlencode
 
 import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-class Settings(BaseSettings):
-    SPOTIFY_CLIENT_ID: str
-    SPOTIFY_CLIENT_SECRET: str
-    SPOTIFY_REDIRECT_URI: str = "http://127.0.0.1:8000/callback"
-    SPOTIFY_AUTH_URL: str = "https://accounts.spotify.com/authorize"
-    SPOTIFY_TOKEN_URL: str = "https://accounts.spotify.com/api/token"
-    SPOTIFY_SCOPE: str = "user-read-private user-read-email user-read-playback-state user-modify-playback-state"
-
-    class Config:
-        env_file = ".env"
-
-settings = Settings()
 
 app = FastAPI()
 
@@ -34,6 +22,7 @@ def login():
     }
     url = f"{settings.SPOTIFY_AUTH_URL}?{urlencode(params)}"
     return RedirectResponse(url)
+
 
 @app.get("/callback")
 async def callback(request: Request):
@@ -54,7 +43,7 @@ async def callback(request: Request):
         if resp.status_code != 200:
             raise HTTPException(status_code=resp.status_code, detail=resp.text)
         token_data = resp.json()
-    # Оставляем только нужные поля
+
     allowed = ["access_token", "refresh_token", "expires_in", "token_type", "scope"]
     safe_token_data = {k: v for k, v in token_data.items() if k in allowed}
     params = urlencode(safe_token_data)
@@ -80,3 +69,13 @@ async def refresh_token(request: Request):
             raise HTTPException(status_code=resp.status_code, detail=resp.text)
         token_data = resp.json()
     return JSONResponse(token_data)
+
+
+@app.get("/clouder-weeks")
+async def get_clouder_weeks():
+    logger.info(f"Getting clouder weeks from mongo")
+    logger.info(f"Mongo URL: {settings.MONGO_URL}")
+    logger.info(f"Mongo DB: {settings.MONGO_DB}")
+    async with AsyncMongoAdapter(settings) as mongo:
+        data = await mongo.get_data("clouder_weeks")
+    return JSONResponse(data)
