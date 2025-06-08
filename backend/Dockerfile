@@ -2,10 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    gcc \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt-get install -y --allow-unauthenticated gcc curl ca-certificates && \
+    # apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN useradd --create-home --shell /bin/bash app
 

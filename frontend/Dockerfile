@@ -7,7 +7,7 @@ RUN npm ci --only=production
 
 COPY . .
 
-RUN echo "VITE_API_BASE_URL=http://64.23.145.49/api" > .env.production
+RUN echo "VITE_API_BASE_URL=/api" > .env.production
 
 RUN npm run build
 

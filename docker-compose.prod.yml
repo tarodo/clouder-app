@@ -1,0 +1,7 @@
+-    container_name: clouder-backend-prod
+-    container_name: clouder-frontend-prod
+-    container_name: clouder-nginx-prod
+-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+-      - ./logs/nginx:/var/log/nginx
+
+volumes: 
