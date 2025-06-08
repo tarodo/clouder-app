@@ -41,13 +41,31 @@ jobs:
 
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1
+        env:
+          IMAGE_PREFIX: ${{ env.IMAGE_PREFIX }}
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          SPOTIFY_REDIRECT_URI: ${{ secrets.SPOTIFY_REDIRECT_URI }}
+          MONGO_URL: ${{ secrets.MONGO_URL }}
+          MONGO_DB: ${{ secrets.MONGO_DB }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
         with:
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
+          envs: IMAGE_PREFIX,SPOTIFY_CLIENT_ID,SPOTIFY_CLIENT_SECRET,SPOTIFY_REDIRECT_URI,MONGO_URL,MONGO_DB,FRONTEND_URL,CORS_ALLOWED_ORIGINS
           script: |
             cd ${{ secrets.PROD_PATH }}
             git pull
-            export IMAGE_PREFIX=${{ env.IMAGE_PREFIX }}
+            cat <<EOF > backend/.env
+            SPOTIFY_CLIENT_ID=$SPOTIFY_CLIENT_ID
+            SPOTIFY_CLIENT_SECRET=$SPOTIFY_CLIENT_SECRET
+            SPOTIFY_REDIRECT_URI=$SPOTIFY_REDIRECT_URI
+            FRONTEND_URL=$FRONTEND_URL
+            CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS
+            MONGO_URL=$MONGO_URL
+            MONGO_DB=$MONGO_DB
+            EOF
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
