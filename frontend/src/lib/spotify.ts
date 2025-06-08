@@ -24,6 +24,10 @@ export interface SpotifyCurrentlyPlaying {
     name: string;
     duration_ms: number;
     artists: { name: string }[];
+    album: {
+      name: string;
+      images: { url: string }[];
+    };
   } | null;
 }
 

@@ -35,7 +35,7 @@ export default function PlayerPage() {
   return (
     <div className="mt-4 max-w-[36rem] mx-auto">
       <Card>
-        <CardContent className="flex flex-col items-center justify-center gap-4 pt-6">
+        <CardContent className="flex flex-col items-center justify-center gap-4">
           <TrackInfo track={track} />
           <PlayerProgressBar track={track} />
           <PlayerControls
