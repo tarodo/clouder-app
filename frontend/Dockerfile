@@ -24,7 +24,6 @@ RUN mkdir -p /var/log/nginx && \
     chown -R nginx:nginx /var/cache/nginx && \
     chown -R nginx:nginx /usr/share/nginx/html
 
-USER nginx
 
 EXPOSE 80
 
