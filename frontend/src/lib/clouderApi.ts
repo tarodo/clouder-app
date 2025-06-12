@@ -1,5 +1,5 @@
 import { config } from "@/config"
-import { getAccessToken } from "./auth"
+import { clouderTokenizedFetch } from "./api"
 
 export interface ClouderWeekResponse {
   clouder_week: string
@@ -30,12 +30,7 @@ export async function getSpPlaylistsForWeek(clouderWeek: string): Promise<SpPlay
 }
 
 export async function moveTrackToPlaylist(trackId: string, sourcePlaylistId: string, targetPlaylistId: string, trashPlaylistId: string): Promise<void> {
-  const token = getAccessToken()
-  if (!token) {
-    throw new Error("No Spotify access token found")
-  }
-
-  const response = await fetch(`${config.api.baseUrl}/clouder_playlists/move_track?sp_token=${token}`, {
+  const response = await clouderTokenizedFetch(`${config.api.baseUrl}/clouder_playlists/move_track`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

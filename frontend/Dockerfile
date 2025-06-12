@@ -7,8 +7,6 @@ RUN npm ci
 
 COPY . .
 
-RUN echo "VITE_API_BASE_URL=/api" > .env.production
-
 RUN npm run build
 
 FROM nginx:alpine

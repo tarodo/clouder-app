@@ -8,7 +8,7 @@ import {
   playerSeek,
   type SpotifyCurrentlyPlaying,
 } from "@/lib/spotify"
-import { getAccessToken } from "@/lib/auth"
+import { isLoggedIn } from "@/lib/auth"
 
 const REFRESH_INTERVAL = 2000
 const ACTION_DELAY = 500 // Delay to allow Spotify API to update state
@@ -18,24 +18,22 @@ export function useSpotifyPlayer() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const token = getAccessToken()
-
   const fetchCurrentTrack = useCallback(async () => {
-    if (!token) {
+    if (!isLoggedIn()) {
       setError("Authentication token not found.")
       setLoading(false)
       return
     }
     try {
-      const currentTrack = await getCurrentlyPlaying(token)
+      const currentTrack = await getCurrentlyPlaying()
       setTrack(currentTrack)
     } catch (e) {
       console.error(e)
-      setError("Failed to fetch current track. Your session may have expired.")
+      setError("Failed to fetch current track.")
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -45,20 +43,22 @@ export function useSpotifyPlayer() {
   }, [fetchCurrentTrack])
 
   const performPlayerAction = useCallback(
-    async (action: (token: string) => Promise<void>) => {
-      if (!token) return
+    async (action: () => Promise<void>) => {
+      if (!isLoggedIn()) return
       try {
-        await action(token)
+        await action()
         setTimeout(fetchCurrentTrack, ACTION_DELAY)
       } catch (e) {
         console.error(e)
         setError("Player command failed.")
       }
     },
-    [token, fetchCurrentTrack]
+    [fetchCurrentTrack]
   )
 
   const handlePrevious = useCallback(() => performPlayerAction(playerPrevious), [performPlayerAction])
+  const handlePlay = useCallback(() => performPlayerAction(playerPlay), [performPlayerAction])
+  const handlePause = useCallback(() => performPlayerAction(playerPause), [performPlayerAction])
   const handleNext = useCallback(() => performPlayerAction(playerNext), [performPlayerAction])
 
   const handlePlayPause = useCallback(async () => {
@@ -70,19 +70,19 @@ export function useSpotifyPlayer() {
   const handleSeek = useCallback((percentage: number) => {
     if (!track?.item) return
     const positionMs = track.item.duration_ms * percentage
-    performPlayerAction(t => playerSeek(t, positionMs))
+    performPlayerAction(() => playerSeek(positionMs))
   }, [track, performPlayerAction])
 
   const handleRewind = useCallback(() => {
     if (!track) return
     const newPositionMs = Math.max(0, track.progress_ms - 10000)
-    performPlayerAction(t => playerSeek(t, newPositionMs))
+    performPlayerAction(() => playerSeek(newPositionMs))
   }, [track, performPlayerAction])
 
   const handleFastForward = useCallback(() => {
     if (!track?.item) return
     const newPositionMs = Math.min(track.item.duration_ms, track.progress_ms + 10000)
-    performPlayerAction(t => playerSeek(t, newPositionMs))
+    performPlayerAction(() => playerSeek(newPositionMs))
   }, [track, performPlayerAction])
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { getAllUserPlaylists, type SpotifyPlaylist } from "@/lib/spotify"
-import { getAccessToken } from "@/lib/auth"
+import { isLoggedIn } from "@/lib/auth"
 
 export function useUserPlaylists() {
   const [playlists, setPlaylists] = useState<SpotifyPlaylist[] | null>(null)
@@ -9,8 +9,7 @@ export function useUserPlaylists() {
 
   useEffect(() => {
     const fetchPlaylists = async () => {
-      const token = getAccessToken()
-      if (!token) {
+      if (!isLoggedIn()) {
         // This case is handled by AppLayout, but as a fallback:
         setError("Authentication token not found.")
         setLoading(false)
@@ -19,7 +18,7 @@ export function useUserPlaylists() {
 
       try {
         setLoading(true)
-        const userPlaylists = await getAllUserPlaylists(token)
+        const userPlaylists = await getAllUserPlaylists()
         setPlaylists(userPlaylists)
       } catch (e) {
         console.error(e)
