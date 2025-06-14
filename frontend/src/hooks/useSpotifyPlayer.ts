@@ -57,8 +57,6 @@ export function useSpotifyPlayer() {
   )
 
   const handlePrevious = useCallback(() => performPlayerAction(playerPrevious), [performPlayerAction])
-  const handlePlay = useCallback(() => performPlayerAction(playerPlay), [performPlayerAction])
-  const handlePause = useCallback(() => performPlayerAction(playerPause), [performPlayerAction])
   const handleNext = useCallback(() => performPlayerAction(playerNext), [performPlayerAction])
 
   const handlePlayPause = useCallback(async () => {
