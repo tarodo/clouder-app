@@ -15,12 +15,14 @@ export function useClouderPlaylists(track: SpotifyCurrentlyPlaying | null) {
 
   useEffect(() => {
     const fetchCategoryPlaylists = async () => {
+
       if (!track?.context || track.context.type !== "playlist") {
         setPlaylists([])
         return
       }
 
       const playlistId = track.context.uri.split(":")[2]
+
       if (!playlistId) {
         setPlaylists([])
         return
