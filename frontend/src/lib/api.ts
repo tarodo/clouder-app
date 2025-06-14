@@ -52,6 +52,7 @@ export async function spotifyFetch(input: RequestInfo | URL, init?: RequestInit)
 
   if (response.status === 401) {
     try {
+      console.log("Refreshing token")
       const newToken = await getNewToken()
       headers.set("Authorization", `Bearer ${newToken}`)
       response = await fetch(input, { ...init, headers })
