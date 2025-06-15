@@ -1,10 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
 import {
-  playerNext,
-  playerPause,
-  playerPlay,
-  playerPrevious,
-  playerSeek,
   type SpotifyCurrentlyPlaying,
 } from "@/lib/spotify"
 import { isLoggedIn } from "@/lib/auth"
@@ -22,7 +17,6 @@ declare global {
   }
 }
 
-const ACTION_DELAY = 500 // Delay to allow Spotify API to update state
 const SPOTIFY_API_BASE = "https://api.spotify.com/v1"
 
 export function useSpotifyPlayer() {
